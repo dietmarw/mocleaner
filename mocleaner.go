@@ -23,15 +23,14 @@ func TTWS(filename string) error {
 	/* Did we open it successfully?  If not, close and return. */
 	if (err!=nil) { inf.Close(); return err; }
 
-	/* Open the output file */
-	outf, err := os.Create(filename+"1");
+	/* Open the output file in system temp dir*/
+	outf, err := ioutil.TempFile("","");
 	/* In case this function generates a "panic", be sure to close this file */
 	defer outf.Close();
 	/* Did we open it succesfully?  If not, close all and return. */
 	if (err!=nil) { inf.Close(); outf.Close(); return err; }
-
 	/* Create a scanner object to break this in to lines */
-	scanner := bufio.NewScanner(inf)
+	scanner := bufio.NewScanner(inf);
 	/* Declare a variable for the line */
 	var line string;
 	/* Loop over lines */
@@ -40,10 +39,11 @@ func TTWS(filename string) error {
 		line = strings.TrimRight(scanner.Text(), " \t")+"\n"
 		outf.Write([]byte(line));
 	}
-
 	/* Close all open files */
 	inf.Close();
 	outf.Close();
+	/* Replace the source file by the trimmed file */
+	os.Rename(outf.Name(), filename);
 
 	/* No errors, so we return nil */
 	return nil;
@@ -65,6 +65,7 @@ func WalkFunc(path string, fi os.FileInfo, err error) error {
 		inf.Close();
 		/* Determine file type */
 		fileType := http.DetectContentType(data);
+		/* only act on text files */
 		if (strings.Contains(fileType, "text/plain") && !fi.IsDir()){
 			fmt.Printf("Trimming: %v\n", path);
 			TTWS(path);
