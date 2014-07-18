@@ -3,9 +3,13 @@
 *.a
 *.so
 
+# temp files
+*~
+
 # Folders
 _obj
 _test
+build
 
 # Architecture specific extensions/prefixes
 *.[568vq]
