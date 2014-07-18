@@ -26,7 +26,7 @@ func WalkFunc(path string, info os.FileInfo, err error) error {
 		if strings.Contains(fileType, "text/plain"){
 			fmt.Printf("Trimming: %v\n", path)
 		} else {
-			fmt.Printf("Skipping file of type: %v: %v\n", fileType, path)
+			fmt.Printf("Skipping file of type '%v': %v\n", fileType, path)
 		}
 	}
 	return nil
