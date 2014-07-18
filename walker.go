@@ -6,6 +6,7 @@ import (
   "flag"
   "fmt"
   "net/http"
+  "io"
   "io/ioutil"
   "strings"
 )
@@ -19,7 +20,8 @@ func WalkFunc(path string, info os.FileInfo, err error) error {
 		inf, err := os.Open(path)
 		defer inf.Close();
 		if (err!=nil) { inf.Close(); return err; }
-		data, err := ioutil.ReadAll(inf);
+		readStart := io.LimitReader(inf, 512);
+		data, err := ioutil.ReadAll(readStart);
 		fileType := http.DetectContentType(data);
 		if strings.Contains(fileType, "text/plain"){
 			fmt.Printf("Trimming: %v\n", path)
