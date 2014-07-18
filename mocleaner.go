@@ -24,7 +24,7 @@ func TTWS(filename string) error {
 	if (err!=nil) { inf.Close(); return err; }
 
 	/* Open the output file */
-	outf, err := os.Create("stripped.txt");
+	outf, err := os.Create(filename+"1");
 	/* In case this function generates a "panic", be sure to close this file */
 	defer outf.Close();
 	/* Did we open it succesfully?  If not, close all and return. */
@@ -49,7 +49,7 @@ func TTWS(filename string) error {
 	return nil;
 }
 
-func WalkFunc(path string, info os.FileInfo, err error) error {
+func WalkFunc(path string, fi os.FileInfo, err error) error {
 	/* list of directories to ignore */
 	blacklist := []string{".bzr", ".cvs", ".git", ".hg", ".svn"}
 	if contains(path, blacklist){
@@ -61,10 +61,14 @@ func WalkFunc(path string, info os.FileInfo, err error) error {
 		if (err!=nil) { inf.Close(); return err; }
 		readStart := io.LimitReader(inf, 512);
 		data, err := ioutil.ReadAll(readStart);
+		/* Close all open files */
+		inf.Close();
+		/* Determine file type */
 		fileType := http.DetectContentType(data);
-		if strings.Contains(fileType, "text/plain"){
-			fmt.Printf("Trimming: %v\n", path)
-		} else {
+		if (strings.Contains(fileType, "text/plain") && !fi.IsDir()){
+			fmt.Printf("Trimming: %v\n", path);
+			TTWS(path);
+		} else if !fi.IsDir() {
 			fmt.Printf("Skipping file of type '%v': %v\n", fileType, path)
 		}
 	}
