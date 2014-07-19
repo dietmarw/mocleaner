@@ -65,6 +65,9 @@ func WalkFunc(path string, fi os.FileInfo, err error) error {
 		data, err := ioutil.ReadAll(readStart);
 		/* Close all open files */
 		inf.Close();
+
+		if (err!=nil) { return err; }
+
 		/* Determine file type */
 		fileType := http.DetectContentType(data);
 		/* only act on text files */
