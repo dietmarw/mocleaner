@@ -2,6 +2,7 @@
 *.o
 *.a
 *.so
+*.prof
 
 # temp files
 *~
@@ -25,3 +26,5 @@ _testmain.go
 
 *.exe
 *.test
+
+mocleaner
