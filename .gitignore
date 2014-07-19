@@ -2,6 +2,7 @@
 *.o
 *.a
 *.so
+*.prof
 
 # temp files
 *~
