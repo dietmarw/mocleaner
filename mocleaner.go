@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"path"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -15,22 +16,31 @@ import (
 /* This function takes a string and returns
    a (potentially nil) error object */
 func TTWS(filename string, verbose bool) error {
-	data, err := ioutil.ReadFile(filename);
-	/* Did we manage to read the contents successfully? */
-
-	fileType := http.DetectContentType(data);
+	/* Read only the first 512 bytes for type detection */
+	inf, err := os.Open(filename)
+	defer inf.Close();
+	if (err!=nil) { return err; }
+	read512 := io.LimitReader(inf, 512);
+	data512, err := ioutil.ReadAll(read512);
+	/* Finished with reading so close again */
+	inf.Close();
+	/* Determine file type */
+	fileType := http.DetectContentType(data512);
 	if (!strings.Contains(fileType, "text/plain")) {
 		if (verbose) { fmt.Printf("Skipping file of type '%v': %v\n", fileType, filename); }
 		return nil;
 	}
 
 	/* Open the output file in system temp dir*/
-	outf, err := ioutil.TempFile("","");
+	outf, err := ioutil.TempFile("", "");
 	/* In case this function generates a "panic", be sure to close this file */
 	defer outf.Close();
 	/* Did we open it succesfully?  If not, close all and return. */
 	if (err!=nil) { return err; }
 
+	/* Open the input file for processing */
+	data, err := ioutil.ReadFile(filename);
+	/* Did we manage to read the contents successfully? */
 	lines := strings.Split(string(data), "\n")
 	nlines := len(lines)
 	for i, line := range(lines) {
@@ -91,7 +101,7 @@ func run(root string, verbose bool) {
 func main() {
 	var verbose = flag.Bool("verbose", false, "request verbose output")
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
-	
+
 	flag.Parse()
 
 	root := flag.Arg(0)
