@@ -28,7 +28,8 @@ func TTWS(filename string) error {
 	/* In case this function generates a "panic", be sure to close this file */
 	defer outf.Close();
 	/* Did we open it succesfully?  If not, close all and return. */
-	if (err!=nil) { inf.Close(); outf.Close(); return err; }
+	if (err!=nil) { inf.Close(); return err; }
+
 	/* Create a scanner object to break this in to lines */
 	scanner := bufio.NewScanner(inf);
 	/* Declare a variable for the line */
@@ -42,6 +43,7 @@ func TTWS(filename string) error {
 	/* Close all open files */
 	inf.Close();
 	outf.Close();
+
 	/* Replace the source file by the trimmed file */
 	os.Rename(outf.Name(), filename);
 
