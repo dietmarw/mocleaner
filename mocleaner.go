@@ -3,12 +3,12 @@ package main
 import (
 	"bufio"
 	"flag"
-	"fmt"
+	//"fmt"
+	"path"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -49,31 +49,49 @@ func TTWS(filename string) error {
 	return nil;
 }
 
-func WalkFunc(path string, fi os.FileInfo, err error) error {
-	/* list of directories to ignore */
-	blacklist := []string{".bzr", ".cvs", ".git", ".hg", ".svn"}
-	if contains(path, blacklist){
-		fmt.Printf("Skipping version control dir: %s\n", path)
-		return filepath.SkipDir
+var blacklist = []string{".bzr", ".cvs", ".git", ".hg", ".svn"}
+
+func processFile(filename string) error {
+	inf, err := os.Open(filename)
+	defer inf.Close();
+	if (err!=nil) { inf.Close(); return err; }
+
+	readStart := io.LimitReader(inf, 512);
+
+	data, err := ioutil.ReadAll(readStart);
+
+	/* Close all open files */
+	inf.Close();
+
+	/* Determine file type */
+	fileType := http.DetectContentType(data);
+
+	/* only act on text files */
+	if (strings.Contains(fileType, "text/plain")){
+		//fmt.Printf("Trimming: %v\n", filename);
+		return TTWS(filename);
 	} else {
-		inf, err := os.Open(path)
-		defer inf.Close();
-		if (err!=nil) { inf.Close(); return err; }
-		readStart := io.LimitReader(inf, 512);
-		data, err := ioutil.ReadAll(readStart);
-		/* Close all open files */
-		inf.Close();
-		/* Determine file type */
-		fileType := http.DetectContentType(data);
-		/* only act on text files */
-		if (strings.Contains(fileType, "text/plain") && !fi.IsDir()){
-			fmt.Printf("Trimming: %v\n", path);
-			TTWS(path);
-		} else if !fi.IsDir() {
-			fmt.Printf("Skipping file of type '%v': %v\n", fileType, path)
-		}
+		//fmt.Printf("Skipping file of type '%v': %v\n", fileType, filename)
+		return nil;
 	}
-	return nil
+}
+
+func processNode(node string) error {
+	fi, err := os.Lstat(node)
+	if (err!=nil) { return err; }
+
+	if (fi.IsDir()) {
+		if contains(fi.Name(), blacklist) { return nil; }
+		contents, err := ioutil.ReadDir(node);
+		if (err!=nil) { return err; }
+		for _, n := range(contents) {
+			serr := processNode(path.Join(node, n.Name()));
+			if (serr!=nil) { return serr; }
+		}
+		return nil;
+	} else {
+		return processFile(node);
+	}
 }
 
 func contains(x string, a []string) bool {
@@ -87,6 +105,8 @@ func contains(x string, a []string) bool {
 func main() {
 	flag.Parse()
 	root := flag.Arg(0)
-	err := filepath.Walk(root, WalkFunc)
-	fmt.Printf("filepath.Walk() returned %v\n", err)
+	//err := filepath.Walk(root, WalkFunc)
+	//filepath.Walk(root, WalkFunc)
+	processNode(root);
+	//fmt.Printf("filepath.Walk() returned %v\n", err)
 }
