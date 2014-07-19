@@ -41,7 +41,7 @@ func TestTTWS(t *testing.T) {
 
 	if (string(data)!=sample) { t.Fatal("Initial string didn't match"); }
 
-	err = TTWS(f1, true);
+	err = TTWS(f1, false);
 	if (err!=nil) { t.Fatal("Error from TTWS: "+err.Error()); }
 
 	data = read(f1, t);

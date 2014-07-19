@@ -15,15 +15,8 @@ import (
 /* This function takes a string and returns
    a (potentially nil) error object */
 func TTWS(filename string, verbose bool) error {
-	/* Open the input file */
-	inf, err := os.Open(filename);
-	/* In case this function generates a "panic", be sure to close this file */
-	defer inf.Close();
-	/* Did we open it successfully?  If not, close and return. */
-	if (err!=nil) { return err; }
-
-	data, err := ioutil.ReadAll(inf);
-	inf.Close();
+	data, err := ioutil.ReadFile(filename);
+	/* Did we manage to read the contents successfully? */
 
 	fileType := http.DetectContentType(data);
 	if (!strings.Contains(fileType, "text/plain")) {
