@@ -3,11 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"path"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+	"runtime/pprof"
 )
 
 /* This function takes a string and returns
@@ -36,9 +38,18 @@ func TTWS(filename string, verbose bool) error {
 	/* Did we open it succesfully?  If not, close all and return. */
 	if (err!=nil) { return err; }
 
-	for _, line := range(strings.Split(string(data), "\n")) {
-		line = strings.TrimRight(line, " \t")+"\n"
+	lines := strings.Split(string(data), "\n")
+	nlines := len(lines)
+	for i, line := range(lines) {
+		//fmt.Println("Original line: '"+line+"'");
+
+		/* Trim whitespace */
+		line = strings.TrimRight(line, " \t")
+		/* Don't add a \n to the last line if it is empty */
+		if (i<nlines-1 || len(line)>0) { line = line+"\n" }
 		outf.Write([]byte(line));
+
+		//fmt.Println(" Trimmed line: '"+line+"'");
 	}
 
 	outf.Close();
@@ -79,10 +90,35 @@ func contains(x string, a []string) bool {
 	return false;
 }
 
+func run(root string, verbose bool) {
+	err := processNode(root, verbose);
+	fmt.Printf("processNode("+root+") returned %v\n", err);
+}
 
 func main() {
+	var verbose = flag.Bool("verbose", false, "request verbose output")
+	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+	
 	flag.Parse()
+
 	root := flag.Arg(0)
-	err := processNode(root, false);
-	fmt.Printf("processNode("+root+") returned %v\n", err);
+
+	if (*cpuprofile!="") {
+		f, err := os.Create(*cpuprofile)
+        if err != nil {
+            log.Fatal(err)
+        }
+
+		fmt.Println("Starting profiling");
+		pprof.StartCPUProfile(f)
+        defer pprof.StopCPUProfile()
+
+		run(root, *verbose);
+
+		pprof.StopCPUProfile();
+		fmt.Println("...done profiling");
+		f.Close();
+	} else {
+		run(root, *verbose);
+	}
 }
