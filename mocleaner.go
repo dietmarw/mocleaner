@@ -21,7 +21,7 @@ func TTWS(filename string) error {
 	/* In case this function generates a "panic", be sure to close this file */
 	defer inf.Close();
 	/* Did we open it successfully?  If not, close and return. */
-	if (err!=nil) { inf.Close(); return err; }
+	if (err!=nil) { return err; }
 
 	/* Open the output file in system temp dir*/
 	outf, err := ioutil.TempFile("","");
@@ -58,7 +58,7 @@ func WalkFunc(path string, fi os.FileInfo, err error) error {
 	} else {
 		inf, err := os.Open(path)
 		defer inf.Close();
-		if (err!=nil) { inf.Close(); return err; }
+		if (err!=nil) { return err; }
 		readStart := io.LimitReader(inf, 512);
 		data, err := ioutil.ReadAll(readStart);
 		/* Close all open files */
