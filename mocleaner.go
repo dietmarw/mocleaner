@@ -3,12 +3,12 @@ package main
 import (
 	"bufio"
 	"flag"
-	"fmt"
+	//"fmt"
+	"path"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -21,15 +21,14 @@ func TTWS(filename string) error {
 	/* In case this function generates a "panic", be sure to close this file */
 	defer inf.Close();
 	/* Did we open it successfully?  If not, close and return. */
-	if (err!=nil) { return err; }
+	if (err!=nil) { inf.Close(); return err; }
 
 	/* Open the output file in system temp dir*/
 	outf, err := ioutil.TempFile("","");
 	/* In case this function generates a "panic", be sure to close this file */
 	defer outf.Close();
 	/* Did we open it succesfully?  If not, close all and return. */
-	if (err!=nil) { inf.Close(); return err; }
-
+	if (err!=nil) { inf.Close(); outf.Close(); return err; }
 	/* Create a scanner object to break this in to lines */
 	scanner := bufio.NewScanner(inf);
 	/* Declare a variable for the line */
@@ -43,7 +42,6 @@ func TTWS(filename string) error {
 	/* Close all open files */
 	inf.Close();
 	outf.Close();
-
 	/* Replace the source file by the trimmed file */
 	os.Rename(outf.Name(), filename);
 
@@ -51,37 +49,49 @@ func TTWS(filename string) error {
 	return nil;
 }
 
-func WalkFunc(path string, fi os.FileInfo, err error) error {
-	/* list of directories to ignore */
-	blacklist := []string{".bzr", ".cvs", ".git", ".hg", ".svn"}
-	if contains(path, blacklist){
-		fmt.Printf("Skipping version control dir: %s\n", path)
-		return filepath.SkipDir
+var blacklist = []string{".bzr", ".cvs", ".git", ".hg", ".svn"}
+
+func processFile(filename string) error {
+	inf, err := os.Open(filename)
+	defer inf.Close();
+	if (err!=nil) { inf.Close(); return err; }
+
+	readStart := io.LimitReader(inf, 512);
+
+	data, err := ioutil.ReadAll(readStart);
+
+	/* Close all open files */
+	inf.Close();
+
+	/* Determine file type */
+	fileType := http.DetectContentType(data);
+
+	/* only act on text files */
+	if (strings.Contains(fileType, "text/plain")){
+		//fmt.Printf("Trimming: %v\n", filename);
+		return TTWS(filename);
 	} else {
-		inf, err := os.Open(path)
-		defer inf.Close();
-		if (err!=nil) { return err; }
-		readStart := io.LimitReader(inf, 512);
-		data, err := ioutil.ReadAll(readStart);
-		/* Close all open files */
-		inf.Close();
-
-		if (err!=nil) { return err; }
-
-		/* Determine file type */
-		fileType := http.DetectContentType(data);
-
-		if (fi.IsDir()) return nil; // Now you don't need ot check this
-
-		/* only act on text files */
-		if (strings.Contains(fileType, "text/plain")) {
-			fmt.Printf("Trimming: %v\n", path);
-			TTWS(path);
-		} else {
-			fmt.Printf("Skipping file of type '%v': %v\n", fileType, path)
-		}
+		//fmt.Printf("Skipping file of type '%v': %v\n", fileType, filename)
+		return nil;
 	}
-	return nil
+}
+
+func processNode(node string) error {
+	fi, err := os.Lstat(node)
+	if (err!=nil) { return err; }
+
+	if (fi.IsDir()) {
+		if contains(fi.Name(), blacklist) { return nil; }
+		contents, err := ioutil.ReadDir(node);
+		if (err!=nil) { return err; }
+		for _, n := range(contents) {
+			serr := processNode(path.Join(node, n.Name()));
+			if (serr!=nil) { return serr; }
+		}
+		return nil;
+	} else {
+		return processFile(node);
+	}
 }
 
 func contains(x string, a []string) bool {
@@ -95,6 +105,8 @@ func contains(x string, a []string) bool {
 func main() {
 	flag.Parse()
 	root := flag.Arg(0)
-	err := filepath.Walk(root, WalkFunc)
-	fmt.Printf("filepath.Walk() returned %v\n", err)
+	//err := filepath.Walk(root, WalkFunc)
+	//filepath.Walk(root, WalkFunc)
+	processNode(root);
+	//fmt.Printf("filepath.Walk() returned %v\n", err)
 }
