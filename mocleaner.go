@@ -13,6 +13,10 @@ import (
 	"runtime/pprof"
 )
 
+/* Specify the directories to be excluded: */
+var blacklist = []string{".bzr", ".cvs", ".git", ".hg", ".svn"}
+
+
 /* This function takes a string and returns
    a (potentially nil) error object */
 func TTWS(filename string, verbose bool) error {
@@ -66,7 +70,6 @@ func TTWS(filename string, verbose bool) error {
 	return nil;
 }
 
-var blacklist = []string{".bzr", ".cvs", ".git", ".hg", ".svn"}
 
 func processNode(node string, verbose bool) error {
 	fi, err := os.Lstat(node)
