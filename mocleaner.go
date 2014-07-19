@@ -70,11 +70,14 @@ func WalkFunc(path string, fi os.FileInfo, err error) error {
 
 		/* Determine file type */
 		fileType := http.DetectContentType(data);
+
+		if (fi.IsDir()) return nil; // Now you don't need ot check this
+
 		/* only act on text files */
-		if (strings.Contains(fileType, "text/plain") && !fi.IsDir()){
+		if (strings.Contains(fileType, "text/plain")) {
 			fmt.Printf("Trimming: %v\n", path);
 			TTWS(path);
-		} else if !fi.IsDir() {
+		} else {
 			fmt.Printf("Skipping file of type '%v': %v\n", fileType, path)
 		}
 	}
