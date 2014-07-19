@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
-	//"fmt"
+	"fmt"
 	"path"
 	"io"
 	"io/ioutil"
@@ -51,7 +51,7 @@ func TTWS(filename string) error {
 
 var blacklist = []string{".bzr", ".cvs", ".git", ".hg", ".svn"}
 
-func processFile(filename string) error {
+func processFile(filename string, verbose bool) error {
 	inf, err := os.Open(filename)
 	defer inf.Close();
 	if (err!=nil) { inf.Close(); return err; }
@@ -68,15 +68,15 @@ func processFile(filename string) error {
 
 	/* only act on text files */
 	if (strings.Contains(fileType, "text/plain")){
-		//fmt.Printf("Trimming: %v\n", filename);
+		if (verbose) { fmt.Printf("Trimming: %v\n", filename); }
 		return TTWS(filename);
 	} else {
-		//fmt.Printf("Skipping file of type '%v': %v\n", fileType, filename)
+		if (verbose) { fmt.Printf("Skipping file of type '%v': %v\n", fileType, filename); }
 		return nil;
 	}
 }
 
-func processNode(node string) error {
+func processNode(node string, verbose bool) error {
 	fi, err := os.Lstat(node)
 	if (err!=nil) { return err; }
 
@@ -85,12 +85,12 @@ func processNode(node string) error {
 		contents, err := ioutil.ReadDir(node);
 		if (err!=nil) { return err; }
 		for _, n := range(contents) {
-			serr := processNode(path.Join(node, n.Name()));
+			serr := processNode(path.Join(node, n.Name()), verbose);
 			if (serr!=nil) { return serr; }
 		}
 		return nil;
 	} else {
-		return processFile(node);
+		return processFile(node, verbose);
 	}
 }
 
@@ -105,8 +105,6 @@ func contains(x string, a []string) bool {
 func main() {
 	flag.Parse()
 	root := flag.Arg(0)
-	//err := filepath.Walk(root, WalkFunc)
-	//filepath.Walk(root, WalkFunc)
-	processNode(root);
-	//fmt.Printf("filepath.Walk() returned %v\n", err)
+	err := processNode(root, true);
+	fmt.Printf("processNode("+root+") returned %v\n", err);
 }
