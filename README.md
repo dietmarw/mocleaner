@@ -32,7 +32,7 @@ mocleaner-win64.exe <dir>
 See [LICENSE](LICENSE) file
 
 ## Development
- * Author: @dietmarw, @mtiller
+ * Authors: [@dietmarw](https://github.com/dietmarw), [@mtiller](https://github.com/mtiller)
  * Contributors: See [graphs/contributors](../../graphs/contributors)
 
 You may report any issues with using the [Issues](../../issues) button.
