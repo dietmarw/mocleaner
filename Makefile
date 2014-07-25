@@ -23,6 +23,7 @@ UNIX_EXECUTABLES := \
 	linux/386/$(EXECUTABLE) \
 	linux/amd64/$(EXECUTABLE)
 WIN_EXECUTABLES := \
+	windows/386/$(EXECUTABLE).exe \
 	windows/amd64/$(EXECUTABLE).exe
 
 COMPRESSED_EXECUTABLES=$(UNIX_EXECUTABLES:%=%.tar.xz) $(WIN_EXECUTABLES:%.exe=%.zip)
@@ -32,6 +33,8 @@ UPLOAD_CMD = $(GITHUB_RELEASE) upload -u $(USER) -r $(EXECUTABLE) -t $(LAST_TAG)
 
 all: $(EXECUTABLE)
 
+builds: $(COMPRESSED_EXECUTABLE_TARGETS)
+
 # 386
 build/darwin/386/$(EXECUTABLE):
 	GOARCH=386 GOOS=darwin go build -o "$@"
@@ -39,7 +42,7 @@ build/freebsd/386/$(EXECUTABLE):
 	GOARCH=386 GOOS=freebsd go build -o "$@"
 build/linux/386/$(EXECUTABLE):
 	GOARCH=386 GOOS=linux go build -o "$@"
-build/windows/386/$(EXECUTABLE):
+build/windows/386/$(EXECUTABLE).exe:
 	GOARCH=386 GOOS=windows go build -o "$@"
 
 # amd64
@@ -55,12 +58,12 @@ build/windows/amd64/$(EXECUTABLE).exe:
 # compressed artifacts, makes a huge difference (Go executable is ~9MB,
 # after compressing ~2MB)
 %.tar.xz: %
-	tar -Jcvf "$<.tar.xz" "$<"
+	tar -Jcvf "$<.tar.xz" -C `dirname "$<"` `basename "$<"`
 %.zip: %.exe
 	zip -j "$@" "$<"
 
 # git tag -a v$(RELEASE) -m 'release $(RELEASE)'
-release: $(EXECUTABLE) $(COMPRESSED_EXECUTABLE_TARGETS)
+release: $(COMPRESSED_EXECUTABLE_TARGETS)
 	git push && git push --tags
 	 $(GITHUB_RELEASE) release -u $(USER) -r $(EXECUTABLE) \
 		-t $(LAST_TAG) -n $(LAST_TAG) || true
@@ -79,8 +82,7 @@ install:
 	go install
 
 clean:
-#	rm go-app || true
 	rm $(EXECUTABLE) || true
 	rm -rf build/
 
-.PHONY: clean release dep install
+.PHONY: clean builds release dep install
