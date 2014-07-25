@@ -17,7 +17,7 @@ Simply download the statically compiled executables for your platform from the
 Currently the `mocleaner` does only remove trailing white spaces from files
 of type "text/plain" (it checks for them) recursively inside `<dir>`
 
-### Linux
+### Linux/Mac/FreeBSD
 
 ```
 mocleaner <dir>
@@ -25,7 +25,7 @@ mocleaner <dir>
 ### Windows
 
 ```
-mocleaner-win64.exe <dir>
+mocleaner.exe <dir>
 ```
 
 ## License
