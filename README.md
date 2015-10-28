@@ -1,6 +1,6 @@
 # mocleaner
 
-[![Build Status](https://drone.io/github.com/dietmarw/mocleaner/status.png)](https://drone.io/github.com/dietmarw/mocleaner/latest)
+[![Build Status](https://travis-ci.org/dietmarw/mocleaner.svg)](https://travis-ci.org/dietmarw/mocleaner)
 
 Rewrite of [Trim Trailing White Spaces](https://github.com/dietmarw/trimtrailingwhitespace) in [Go language](http://golang.org)
 
