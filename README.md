@@ -6,11 +6,11 @@ Rewrite of [Trim Trailing White Spaces](https://github.com/dietmarw/trimtrailing
 
 ## Releases
 You can find the pre-releases under the
-[releases link](../../releases).
+[releases link](https://github.com/dietmarw/mocleaner/releases).
 
 ## Installation
 Simply download the statically compiled executables for your platform from the
-[releases link](../../releases).
+[releases link](https://github.com/dietmarw/mocleaner/releases).
 
 ## Usage
 
@@ -33,8 +33,8 @@ See [LICENSE](LICENSE) file
 
 ## Development
  * Authors: [@dietmarw](https://github.com/dietmarw), [@mtiller](https://github.com/mtiller)
- * Contributors: See [graphs/contributors](../../graphs/contributors)
+ * Contributors: See [graphs/contributors](https://github.com/dietmarw/mocleaner/graphs/contributors)
 
-You may report any issues with using the [Issues](../../issues) button.
+You may report any issues with using the [Issues](https://github.com/dietmarw/mocleaner/issues) button.
 
-Contributions in shape of [Pull Requests](../../pulls) are always welcome.
+Contributions in shape of [Pull Requests](https://github.com/dietmarw/mocleaner/pulls) are always welcome.
